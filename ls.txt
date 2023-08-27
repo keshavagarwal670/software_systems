@@ -1,0 +1,7 @@
+1st.c
+3.c
+7.c
+a.out
+code.c
+ls.txt
+README.md
