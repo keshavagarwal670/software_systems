@@ -13,9 +13,10 @@ Date: 6th oct, 2023.
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
+#include <fcntl.h>
 int main() {
     int pipe_fd[2];
+
     if (pipe(pipe_fd) == -1) {
         perror("pipe");
         exit(EXIT_FAILURE);
@@ -28,36 +29,33 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    if (child_pid == 0) {
+    if (child_pid == 0) {  
+        close(pipe_fd[0]);  
 
-        close(pipe_fd[0]);
-
-        int stdout_copy = dup(STDOUT_FILENO);
-        if (stdout_copy == -1) {
-            perror("dup");
-            exit(EXIT_FAILURE);
-        }
-
-        close(STDOUT_FILENO);
-
-        dup(pipe_fd[1]);
-        close(pipe_fd[1]);
+        //dup(pipe_fd[1]); (error)
+        //dup2(pipe_fd[1], STDOUT_FILENO);
+	fcntl(pipe_fd[1], F_SETFD, FD_CLOEXEC);  
+        dup2(pipe_fd[1], STDOUT_FILENO);	
+        
+	close(pipe_fd[1]);  
 
         execlp("ls", "ls", "-l", NULL);
         perror("execlp");
         exit(EXIT_FAILURE);
-    } else {
-        close(pipe_fd[1]);
+    } else { 
+        close(pipe_fd[1]); 
+        
+	//dup(pipe_fd[0]);  (error)
+	//dup2(pipe_fd[0], STDIN_FILENO);
+	fcntl(pipe_fd[0], F_SETFD, FD_CLOEXEC);  
+        dup2(pipe_fd[0], STDIN_FILENO);
+        
+	close(pipe_fd[0]);  
 
-        close(STDIN_FILENO);
-        dup(pipe_fd[0]);
-        close(pipe_fd[0]);
-
-        execlp("wc", "wc", NULL);
+        execlp("wc", "wc", NULL);  
         perror("execlp");
         exit(EXIT_FAILURE);
     }
 
     return 0;
 }
-
