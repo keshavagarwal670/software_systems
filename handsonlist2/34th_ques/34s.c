@@ -1,14 +1,12 @@
 /*
-============================================================================
-Name : 34a.c
-Author : Keshav Agarwal
-Description : Write a program to create a concurrent server.
-a. use fork
-Date: 12th oct, 2023
+ * ============================================================================
+ Name : 34s.c
+ Author : Keshav Agarwal
+ Description : Write a program to create a concurrent server.
+	a. use fork
+ Date: 16th OCT, 2023.
 ============================================================================
 */
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +15,7 @@ Date: 12th oct, 2023
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#define PORT 12345
+#define PORT 12356
 #define MAX_BUFFER_SIZE 1024
 
 void handle_client(int client_socket) {
@@ -65,7 +63,7 @@ int main() {
     }
 
     // Listen for incoming connections
-    if (listen(server_socket, 5) == -1) {
+    if (listen(server_socket, 1) == -1) {
         perror("Error listening");
         exit(EXIT_FAILURE);
     }

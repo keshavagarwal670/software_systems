@@ -1,14 +1,12 @@
 /*
-============================================================================
-Name : 34b.c
-Author : Keshav Agarwal
-Description : Write a program to create a concurrent server.
-b. use pthread_create
-Date: 12th oct, 2023
+ * ============================================================================
+ Name : 34bs.c
+ Author : Keshav Agarwal
+ Description : Write a program to create a concurrent server.
+ b. use pthread_create
+ Date: 12th OCT, 2023.
 ============================================================================
 */
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -99,4 +97,3 @@ int main() {
 
     return 0;
 }
-

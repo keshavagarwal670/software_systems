@@ -14,50 +14,40 @@ Date: 12th oct, 2023
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#define SERVER_IP "172.16.145.2"
-#define PORT 12345
-#define MAX_BUFFER_SIZE 1024
-
 int main() {
-    int client_socket;
-    struct sockaddr_in server_addr;
-    char buffer[MAX_BUFFER_SIZE];
+    int clientSocket;
+    struct sockaddr_in serverAddr;
+    char buffer[1024];
 
-    // Create socket
-    client_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (client_socket == -1) {
-        perror("Error creating socket");
-        exit(EXIT_FAILURE);
+    // Create a socket
+    clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (clientSocket < 0) {
+        perror("Socket creation failed");
+        exit(1);
     }
 
-    // Prepare the server address structure
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT);
-    server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
+    // Set up the server address structure
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(8080);
+    serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); 
 
     // Connect to the server
-    if (connect(client_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
-        perror("Error connecting to server");
-        exit(EXIT_FAILURE);
+    if (connect(clientSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+        perror("Connection failed");
+        exit(1);
     }
 
     // Send data to the server
-    strcpy(buffer, "Hello, Server!");
-    send(client_socket, buffer, strlen(buffer), 0);
-    printf("Sent: %s\n", buffer);
+    char message[] = "Hello from the client";
+    send(clientSocket, message, sizeof(message), 0);
+    printf("Message sent to server\n");
 
     // Receive a response from the server
-    int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
-    if (bytes_received <= 0) {
-        perror("Error receiving data");
-    } else {
-        buffer[bytes_received] = '\0';
-        printf("Received: %s\n", buffer);
-    }
+    recv(clientSocket, buffer, sizeof(buffer), 0);
+    printf("Received from server: \n");
 
-    // Close the client socket
-    close(client_socket);
+    // Close the socket
+    close(clientSocket);
 
     return 0;
 }
-

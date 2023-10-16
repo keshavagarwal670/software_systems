@@ -7,74 +7,56 @@ Date: 12th oct, 2023
 ============================================================================
 */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#define PORT 12345
-#define MAX_BUFFER_SIZE 1024
-
 int main() {
-    int server_socket, client_socket;
-    struct sockaddr_in server_addr, client_addr;
-    socklen_t client_addr_len = sizeof(client_addr);
-    char buffer[MAX_BUFFER_SIZE];
+    int serverSocket, newSocket;
+    struct sockaddr_in serverAddr, newAddr;
+    socklen_t addrSize;
+    char buffer[1024];
 
-    // Create socket
-    server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket == -1) {
-        perror("Error creating socket");
-        exit(EXIT_FAILURE);
+    // Create a socket
+    serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (serverSocket < 0) {
+        perror("Socket creation failed");
+        exit(1);
     }
 
-    // Prepare the server address structure
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(PORT);
+    // Set up the server address structure
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(8080);
+    serverAddr.sin_addr.s_addr = INADDR_ANY;
 
     // Bind the socket to the server address
-    if (bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
-        perror("Error binding socket");
-        exit(EXIT_FAILURE);
+    if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+        perror("Binding failed");
+        exit(1);
     }
 
     // Listen for incoming connections
-    if (listen(server_socket, 5) == -1) {
-        perror("Error listening");
-        exit(EXIT_FAILURE);
-    }
+    listen(serverSocket, 10);
+    printf("Listening on port 8080...\n");
 
-    printf("Server is listening on port %d...\n", PORT);
-
-    // Accept incoming connections
-    client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_addr_len);
-    if (client_socket == -1) {
-        perror("Error accepting connection");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Accepted connection from %s:%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+    // Accept a connection from a client
+    addrSize = sizeof(newAddr);
+    newSocket = accept(serverSocket, (struct sockaddr*)&newAddr, &addrSize);
 
     // Receive data from the client
-    while (1) {
-        int bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
-        if (bytes_received <= 0) {
-            break;
-        }
+    recv(newSocket, buffer, sizeof(buffer), 0);
+    printf("Received from client: %s\n", buffer);
 
-        buffer[bytes_received] = '\0';
-        printf("Received: %s", buffer);
+    // Send a response to the client
+    char response[] = "Hello from the server";
+    send(newSocket, response, sizeof(response), 0);
+    printf("Response sent to client\n");
 
-        // Send a response back to the client
-        send(client_socket, buffer, strlen(buffer), 0);
-    }
-
-    // Close the sockets
-    close(client_socket);
-    close(server_socket);
+    // Close sockets
+    close(newSocket);
+    close(serverSocket);
 
     return 0;
 }
